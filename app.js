@@ -157,14 +157,14 @@ function setupEventListeners() {
     ".grid-controls span:first-child",
   );
 
-  function updateSelectionCount() {
+  window.updateSelectionCount = function() {
     const checkedCount = document.querySelectorAll(
       '.table-container tbody input[type="checkbox"]:checked',
     ).length;
     if (countDisplay) {
       countDisplay.textContent = `${checkedCount}개 선택됨`;
     }
-  }
+  };
 
   if (headerCheckbox) {
     headerCheckbox.addEventListener("change", function () {
@@ -175,7 +175,7 @@ function setupEventListeners() {
       rowCheckboxes.forEach((cb) => {
         cb.checked = isChecked;
       });
-      updateSelectionCount();
+      window.updateSelectionCount();
     });
   }
 
@@ -183,7 +183,7 @@ function setupEventListeners() {
   const tbody = document.querySelector(".table-container tbody");
   tbody.addEventListener("change", (e) => {
     if (e.target.matches('input[type="checkbox"]')) {
-      updateSelectionCount();
+      window.updateSelectionCount();
       if (!e.target.checked && headerCheckbox) {
         headerCheckbox.checked = false;
       }
@@ -620,7 +620,7 @@ function renderPatternList() {
   
   masterContainer.innerHTML = "";
   // Clear list container, but keep the header if any (though we redefined sidebarBody to be the list section)
-  listContainer.innerHTML = '<div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">통합 대상 목록</div>';
+  listContainer.innerHTML = '<div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">포함 대상 목록</div>';
   
   countEl.innerText = selectedPatterns.length;
 
@@ -653,7 +653,12 @@ function renderPatternList() {
                     <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.aiCopyrightName}</p>
                 </div>
                 ${!isMaster 
-                    ? `<button class="swap-btn" data-swap-id="${p.id}" style="margin-top:0; flex-shrink:0;"><i class="fas fa-sync-alt"></i> 기준변경</button>` 
+                    ? `
+                    <div class="item-card-actions">
+                        <button class="swap-btn" data-swap-id="${p.id}" style="margin-top:0;"><i class="fas fa-sync-alt"></i> 기준변경</button>
+                        <button class="exclude-btn" data-exclude-id="${p.id}"><i class="fas fa-minus-circle"></i> 대상 제외</button>
+                    </div>
+                    ` 
                     : ""}
             </div>
             ${displayDiffText ? `<div class="patternItem-diff">${displayDiffText} 불일치</div>` : ""}
@@ -677,9 +682,63 @@ function renderPatternList() {
         e.stopPropagation();
         swapMasterPattern(p.id);
       });
+      const excludeBtn = div.querySelector(".exclude-btn");
+      excludeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        excludePattern(p.id);
+      });
       listContainer.appendChild(div);
     }
   });
+}
+
+/**
+ * 포함 대상 목록에서 특정 항목을 제외하고 메인 테이블 체크박스 동기화
+ */
+function excludePattern(id) {
+  // 1. 선택 목록에서 제거
+  selectedPatterns = selectedPatterns.filter(p => p.id !== id);
+
+  // 2. 메인 테이블 체크박스 해제
+  const row = document.querySelector(`.table-container tbody tr[data-pattern-id="${id}"]`);
+  if (row) {
+    const cb = row.querySelector('.row-checkbox');
+    if (cb) {
+      cb.checked = false;
+      // 상단 헤더 체크박스 해제 처리 (이미 setupEventListeners에서 change 핸들러로 동작하지만 명시적 호출 대신 이벤트 발생 유도 가능)
+      const headerCheckbox = document.querySelector('.table-container thead input[type="checkbox"]');
+      if (headerCheckbox) headerCheckbox.checked = false;
+    }
+  }
+
+  // 3. 전체 선택 개수 갱신
+  if (window.updateSelectionCount) window.updateSelectionCount();
+
+  // 4. 우측 패널이 제외된 항목인 경우 처리
+  if (selectedPatternId === id) {
+    // 남은 패턴 중 첫 번째 패턴(기준 제외)을 선택하거나 없으면 비움
+    const remainings = selectedPatterns.filter(p => p.id !== checkedPatternId);
+    if (remainings.length > 0) {
+      selectPatternForRight(remainings[0].id);
+    } else {
+      selectedPatternId = null;
+      const rightPanel = document.querySelector('.form-panel[data-panel="right"]');
+      if (rightPanel) {
+        const fields = rightPanel.querySelectorAll('[data-key]');
+        fields.forEach(f => {
+          f.value = "";
+          f.classList.remove('diff-highlight');
+        });
+        const headerSpan = rightPanel.querySelector(".panel-header > span:first-child");
+        if (headerSpan) headerSpan.innerHTML = `<span>포함 대상 없음</span>`;
+      }
+    }
+  }
+
+  // 5. UI 리로드
+  renderPatternList();
+  updateDiff();
+  showToast("항목이 목록에서 제외되었습니다.");
 }
 
 function swapMasterPattern(newMasterId) {
