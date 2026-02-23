@@ -17,6 +17,8 @@ let patterns = [];
 let selectedPatterns = [];
 // 전역 변수: 검수 완료된 패턴 ID 추적
 let reviewedPatternIds = new Set();
+// 전역 변수: 기준 패턴의 초기 값 저장 (수정 이력 추적용)
+let originalMasterValues = {};
 
 // 모든 DOM 조작이 완료된 후 시작
 document.addEventListener("DOMContentLoaded", async () => {
@@ -785,8 +787,93 @@ function fillPanel(panelName, p) {
 
   Object.keys(map).forEach((key) => {
     const el = panel.querySelector(`[data-key="${key}"]`);
-    if (el) el.value = map[key] || "";
+    if (el) {
+      el.value = map[key] || "";
+      
+      // 양쪽 패널 모두 초기값 저장(왼쪽만) 및 수정 감지 이벤트 바인딩
+      if (panelName === "left") {
+        originalMasterValues[key] = el.value;
+      }
+      
+      // 기존 리스너 제거 후 신규 등록 (중복 방지)
+      el.removeEventListener("input", syncUIPanels);
+      el.addEventListener("input", syncUIPanels);
+    }
   });
+
+  syncUIPanels(); // 초기 상태 업데이트
+}
+
+/**
+ * 전역 UI 동기화: 수정 이력(파란색), 불일치(노란색) 하이라이트 및 사이드바 목록 갱신
+ */
+function syncUIPanels() {
+  checkFieldEdits();
+  updateDiff();
+  renderPatternList(); // 사이드바 목록의 불일치 텍스트 실시간 갱신
+}
+
+/**
+ * 기준 패턴 패널의 값이 원래와 달라졌는지 체크하여 하이라이트
+ */
+function checkFieldEdits() {
+  const leftPanel = document.querySelector('.form-panel[data-panel="left"]');
+  if (!leftPanel) return;
+
+  const fields = leftPanel.querySelectorAll('[data-key]');
+  fields.forEach(el => {
+    const key = el.getAttribute('data-key');
+    const originalValue = (originalMasterValues[key] || "").trim();
+    const currentValue = (el.value || "").trim();
+
+    if (currentValue !== originalValue) {
+      el.classList.add('is-edited');
+      // 롤백 버튼 표시
+      const rollbackBtn = leftPanel.querySelector(`[data-rollback="${key}"]`);
+      if (rollbackBtn) rollbackBtn.style.visibility = 'visible';
+    } else {
+      el.classList.remove('is-edited');
+      // 롤백 버튼 숨김
+      const rollbackBtn = leftPanel.querySelector(`[data-rollback="${key}"]`);
+      if (rollbackBtn) rollbackBtn.style.visibility = 'hidden';
+    }
+  });
+}
+
+/**
+ * 특정 필드를 초기 값으로 복구
+ * @param {string} key 데이터 키
+ */
+function rollbackField(key) {
+  const leftPanel = document.querySelector('.form-panel[data-panel="left"]');
+  if (!leftPanel) return;
+
+  const el = leftPanel.querySelector(`[data-key="${key}"]`);
+  if (el) {
+    el.value = originalMasterValues[key] || "";
+    syncUIPanels();
+    showToast(`${fieldLabelMap[key] || key} 항목이 원본 데이터로 복원되었습니다.`);
+  }
+}
+
+/**
+ * 우측 비교 패널의 데이터를 좌측 기준 패널로 복사
+ * @param {string} key 데이터 키
+ */
+function applyToLeft(key) {
+  const rightPanel = document.querySelector('.form-panel[data-panel="right"]');
+  const leftPanel = document.querySelector('.form-panel[data-panel="left"]');
+  if (!rightPanel || !leftPanel) return;
+
+  const rightEl = rightPanel.querySelector(`[data-key="${key}"]`);
+  const leftEl = leftPanel.querySelector(`[data-key="${key}"]`);
+
+  if (rightEl && leftEl) {
+    leftEl.value = rightEl.value;
+    // 값이 변경되었으므로 동기화 실행
+    syncUIPanels();
+    showToast(`${fieldLabelMap[key] || key} 항목이 기준에 적용되었습니다.`);
+  }
 }
 
 // ============================================
