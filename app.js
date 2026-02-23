@@ -17,7 +17,7 @@ let patterns = [];
 let selectedPatterns = [];
 // 전역 변수: 검수 완료된 패턴 ID 추적
 let reviewedPatternIds = new Set();
-// 전역 변수: 대표 제품의 초기 값 저장 (수정 이력 추적용)
+// 전역 변수: 기준 패턴의 초기 값 저장 (수정 이력 추적용)
 let originalMasterValues = {};
 
 // 모든 DOM 조작이 완료된 후 시작
@@ -313,7 +313,7 @@ function handleCtrl1() {
         // 초기화: 첫 번째 항목을 기준으로, 두 번째 항목을 비교 대상으로 설정
         checkedPatternId = selectedPatterns[0].id;
         fillPanel("left", selectedPatterns[0]);
-        // 대표 제품은 자동으로 검수 완료 처리
+        // 기준 패턴은 자동으로 검수 완료 처리
         reviewedPatternIds.add(checkedPatternId);
         
         if (selectedPatterns.length > 1) {
@@ -765,7 +765,7 @@ function fillPanel(panelName, p) {
 
     if (panelName === "left") {
       const checkedPattern = selectedPatterns.find((x) => x.id === checkedPatternId);
-      headerSpan.innerHTML = `<span>${checkedPattern?.controlPanelName || "신규제품"}</span> <span class="role-label">대표 제품</span>`;
+      headerSpan.innerHTML = `<span>${checkedPattern?.controlPanelName || "대표 제품 정보"}</span> <span class="role-label">대표 제품</span>`;
     } else if (panelName === "right") {
       const selectedPattern = selectedPatterns.find((x) => x.id === selectedPatternId);
       headerSpan.innerHTML = `<span>${selectedPattern?.controlPanelName || "비교대상"}</span> <span class="role-label">포함 대상</span>`;
@@ -814,7 +814,7 @@ function syncUIPanels() {
 }
 
 /**
- * 대표 제품 패널의 값이 원래와 달라졌는지 체크하여 하이라이트
+ * 기준 패턴 패널의 값이 원래와 달라졌는지 체크하여 하이라이트
  */
 function checkFieldEdits() {
   const leftPanel = document.querySelector('.form-panel[data-panel="left"]');
@@ -1000,4 +1000,3 @@ function populateDropdowns() {
         select.value = currentValue;
     });
 }
-
