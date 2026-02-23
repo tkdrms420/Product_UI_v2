@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iSCAN UI Clone</title>
+    <!-- 폰트 및 아이콘 로드 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #11141e;       /* 전체 배경 */
+            --bg-sidebar: #1a1e2e;    /* 사이드바/헤더 배경 */
+            --bg-panel: #161b26;      /* 메인 패널 배경 */
+            --primary-blue: #2563eb;  /* 포인트 파란색 */
+            --text-white: #e2e8f0;    /* 기본 흰색 텍스트 */
+            --text-gray: #94a3b8;     /* 회색 텍스트 */
+            --border-color: #2d3748;  /* 테두리 색상 */
+            --header-height: 50px;
+            --sidebar-width: 240px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        /* --- Header --- */
+        header {
+            height: var(--header-height);
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #60a5fa; /* 하늘색 로고 */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo span {
+            color: white;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            text-align: right;
+            line-height: 1.2;
+            font-size: 12px;
+        }
+        .user-profile .role { color: var(--text-gray); font-size: 11px; }
+
+        /* --- Layout Container --- */
+        .container {
+            display: flex;
+            height: 100vh;
+            padding-top: var(--header-height);
+        }
+
+        /* --- Sidebar --- */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Collapsible sidebar */
+        aside {
+            transition: width 220ms ease, background-color 220ms ease;
+        }
+
+        aside.collapsed {
+            width: 64px;
+            min-width: 64px;
+            max-width: 64px;
+            overflow: visible;
+        }
+        aside.collapsed .menu-item .label,
+        aside.collapsed .menu-item .label-text {
+            justify-content: center;
+        }
+        aside.collapsed .menu-item .label-text {
+            display: none;
+        }
+        aside.collapsed .submenu { display: none; }
+
+        .menu-category {
+            padding: 15px 20px 5px;
+            font-size: 11px;
+            color: var(--text-gray);
+            font-weight: bold;
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid #353f53;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between; /* 제품명과 라벨 양끝 배치 */
+            align-items: center;
+            background-color: #2d3748;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .role-label {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: rgba(96, 165, 250, 0.1); /* 하늘색 배경 투명도 */
+            color: #60a5fa; /* 하늘색 */
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            white-space: nowrap;
+        }
+        .role-ref {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: rgba(96, 165, 250, 0.1); /* 하늘색 배경 투명도 */
+            color: #60a5fa; /* 하늘색 */
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            white-space: nowrap;
+        }
+        .role-target {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: rgba(96, 165, 250, 0.1); 
+            color: #60a5fa; 
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            white-space: nowrap;
+        }
+
+        /* 검수 완료 상태 스타일 */
+        .item-card.reviewed {
+            background-color: rgba(37, 99, 235, 0.15) !important; /* 연한 파란색 */
+            border-left: 3px solid #60a5fa !important;
+        }
+        .item-card.reviewed.comparing {
+            background-color: rgba(236, 201, 75, 0.15) !important; /* 선택 시 노란색 우선 */
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: 0.2s;
+            justify-content: space-between;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text-white);
+        }
+
+        .menu-item.active {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #60a5fa;
+            border-right: 2px solid #60a5fa;
+        }
+
+        .menu-item .label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submenu {
+            background-color: #11141e;
+        }
+
+        .submenu-item {
+            padding: 10px 20px 10px 50px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .submenu-item.active {
+            color: #60a5fa;
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 15px;
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Title Section */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .title-area h2 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .title-area p {
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        .title-area a {
+            color: var(--text-gray);
+            text-decoration: underline;
+        }
+
+        .action-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .worker-info {
+            color: var(--text-gray);
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        .worker-info span { color: white; font-weight: bold; }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-white);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* Grid Controls */
+        .grid-controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+
+
+
+
+        /* Table */
+        .table-container {
+            flex: 1;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            table-layout: fixed; /* Necessary for resizing */
+        }
+
+        thead {
+            background-color: #242b3b;
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            padding: 8px 12px;
+            text-align: center; /* 이미지상 대부분 가운데 정렬 */
+            font-weight: 500;
+            color: #e2e8f0;
+            border-right: 1px solid #353f53;
+            font-size: 12px;
+            position: relative; /* For resizer positioning */
+        }
+        
+        th:last-child { border-right: none; }
+
+        /* Column Resizer Styles */
+        .resizer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            cursor: col-resize;
+            user-select: none;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .resizer:hover, .resizing {
+            background-color: #60a5fa; /* Blue highlight on hover/active */
+        }
+
+        /* Sorting & Dragging Styles */
+        th {
+            cursor: pointer; /* Require click for sorting */
+            user-select: none;
+        }
+
+        th.dragging {
+            opacity: 0.5;
+            background-color: #2d3748;
+            border: 2px dashed #60a5fa;
+        }
+        
+        th.drag-over {
+            border-left: 2px solid #60a5fa;
+        }
+
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+        
+        .sort-icon.active { color: #60a5fa; }
+
+        /* 체크박스 스타일 */
+        input[type="checkbox"] {
+            accent-color: var(--primary-blue);
+            transform: scale(1.2);
+            background-color: transparent;
+            border: 1px solid var(--text-gray);
+        }
+
+        /* Editable sheet styles */
+        tbody td {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text-white);
+            border-bottom: 1px solid #353f53;
+            border-right: 1px solid #353f53;
+            vertical-align: middle;
+            background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+            
+            /* 텍스트 생략(Ellipsis) 핵심 설정 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 0; /* fixed table layout에서 ellipsis가 작동하게 함 */
+            transition: max-width 0.2s ease;
+        }
+
+        /* 셀을 클릭하여 편집 중일 때는 전체 내용이 보이도록 함 */
+        tbody td[contenteditable="true"]:focus {
+            overflow: visible;
+            white-space: normal;
+            max-width: none;
+            position: relative;
+            z-index: 100;
+            background-color: #1a1e2e !important;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            min-width: 200px;
+        }
+
+        thead th { text-align: center; }
+
+        /* subtle zebra that fits dark theme */
+        tbody tr:nth-child(odd) td { background-color: rgba(255,255,255,0.01); }
+        tbody tr:nth-child(even) td { background-color: rgba(0,0,0,0); }
+
+        /* contenteditable look-and-feel */
+        tbody td[contenteditable="true"] {
+            cursor: text;
+            outline: none;
+        }
+        tbody td[contenteditable="true"]:focus {
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.06);
+            background-color: rgba(37,99,235,0.03);
+        }
+
+        /* placeholder for empty editable cells */
+        tbody td[contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: var(--text-gray);
+            pointer-events: none;
+            display: block;
+            opacity: 0.9;
+        }
+
+
+        /* --- Toast Notification --- */
+        .toast-container {
+            position: fixed;
+            top: 70px; /* Header height + margin */
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .toast-message {
+            background-color: rgba(239, 68, 68, 0.9); /* Red background for alert */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        /* --- Modal Common --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-window {
+            background-color: #11141e;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            width: 900px;
+            max-width: 95%;
+            max-height: 90vh;
+        }
+
+        .modal-window.xlarge {
+            width: 95%;
+            height: 90%;
+            max-width: 1600px;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1a1e2e;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 18px;
+        }
+        .modal-close:hover { color: white; }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background-color: #1a1e2e;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* --- Form Elements --- */
+        .form-section { margin-bottom: 20px; }
+        .form-section-title {
+            font-size: 14px;
+            color: #60a5fa;
+            border-bottom: 2px solid #60a5fa;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .form-label {
+            color: var(--text-gray);
+            font-size: 12px;
+            text-align: right;
+        }
+        .form-label.required::before { content: "* "; color: #ef4444; }
+
+        .form-input, .form-select, .form-textarea {
+            background-color: #161b26;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .form-textarea { resize: vertical; min-height: 60px; }
+
+        /* Fix for Select Options (Dropdown Menu) */
+        .form-select option {
+            background-color: #161b26;
+            color: white;
+            padding: 10px;
+        }
+        
+        /* Optional: Custom arrow for select if standard one looks bad (browser dependent) */
+        .form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            padding-right: 30px; /* Space for arrow */
+        }
+
+        /* --- Split View (Multi) --- */
+        .split-view {
+            display: flex;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .split-list {
+            width: 300px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+            overflow-y: auto;
+        }
+
+        .split-detail {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .item-card {
+            background-color: #161b26;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .item-card:hover {
+            border-color: #60a5fa;
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+        .item-card.comparing {
+            border-color: #ecc94b;
+            background-color: rgba(236, 201, 75, 0.1);
+            box-shadow: 0 0 8px rgba(236, 201, 75, 0.2);
+        }
+        .divider {
+            margin: 14px 0;
+            height: 1px;
+            background: #353f53;
+        }
+        .item-card-checkbox {
+            margin-top: 2px;
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+        .item-card-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .item-card h4 {
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: white;
+            word-wrap: break-word;
+        }
+        .item-card p {
+            font-size: 11px;
+            color: var(--text-gray);
+            word-wrap: break-word;
+        }
+
+        .modal-window.xlarge {
+            width: 95%;
+            height: 90%;
+            max-width: 1600px;
+        }
+
+        .three-col-layout {
+            display: flex;
+            height: 100%;
+        }
+
+        .col-list {
+            width: 280px;
+            background-color: #1a202c;
+            border-right: 1px solid #353f53;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-header {
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #353f53;
+            color: #94a3b8;
+        }
+
+        .list-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .col-comparison {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            overflow-y: auto;
+            background-color: #0f172a; /* Darker bg for contrast with panels */
+        }
+
+        .form-panel {
+            flex: 1;
+            background-color: #1e293b;
+            border-radius: 8px;
+            border: 1px solid #353f53;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 15px;
+            border-bottom: 1px solid #353f53;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2d3748;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .panel-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Difference Highlight: Stronger visual */
+        .diff-highlight {
+            border: 1px solid #ecc94b !important;
+            background-color: rgba(236, 201, 75, 0.1) !important; /* Light yellow bg */
+            box-shadow: 0 0 5px rgba(236, 201, 75, 0.3);
+        }
+        
+
+
+        .tabs {
+            display: flex;
+            gap: 18px;
+            padding: 10px 16px 0 16px;
+            border-bottom: 1px solid #353f53;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 10px 2px 12px;
+            color: #94a3b8;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #e2e8f0;
+            border-bottom-color: #2563eb;
+        }
+
+        .divider {
+            margin: 14px 0;
+            height: 1px;
+            background: #353f53;
+        }
+
+        .colBadge {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .patternItem-diff {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(236, 201, 75, 0.15);
+            color: #ecc94b;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Master-Detail Sidebar Styles */
+        .reference-section {
+            padding: 15px;
+            background-color: #11141e;
+            border-bottom: 2px solid #353f53;
+        }
+        .reference-title {
+            font-size: 11px;
+            color: #60a5fa;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .master-card {
+            background-color: #1e293b;
+            border: 2px solid #2563eb;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .master-card h4 {
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: white;
+            word-wrap: break-word;
+        }
+        .master-card p {
+            font-size: 11px;
+            color: var(--text-gray);
+            word-wrap: break-word;
+        }
+        .list-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .swap-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            background-color: #353f53;
+            color: #e2e8f0;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .swap-btn:hover {
+            background-color: #4a5568;
+            color: #60a5fa;
+        }
+        .item-card.is-master {
+            cursor: default;
+        }
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* 헤더 텍스트와 버튼 높이 정렬 */
+            gap: 10px;
+        }
+        .swap-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            background-color: #353f53;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 상단 헤더 -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars fa-lg" style="color: #94a3b8; cursor: pointer;"></i>
+            <div class="logo">
+                <i class="far fa-check-circle fa-lg"></i>
+                <span>iSCAN</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <i class="fas fa-search" style="color: #94a3b8; cursor: pointer;"></i>
+            <div class="user-profile">
+                <div class="role">관리자</div>
+                <div class="name">윤상근</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 사이드바 -->
+        <aside>
+            <div class="menu-item" style="margin-top: 10px;">
+                <div class="label"><i class="fas fa-home"></i> <span class="label-text">Dashboard</span></div>
+            </div>
+
+            <div class="menu-category">AI작업</div>
+
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-desktop"></i> <span class="label-text">AI모델 관리</span></div>
+                <i class="fas fa-chevron-left" style="font-size: 10px;"></i>
+            </div>
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-database"></i> <span class="label-text">수집 DB 분류</span></div>
+            </div>
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-chart-bar"></i> <span class="label-text">AI분류 평가</span></div>
+            </div>
+
+            <!-- 활성화된 메뉴 -->
+            <div class="menu-item active">
+                <div class="label"><i class="fas fa-star"></i> <span class="label-text">SWDB 작업실</span></div>
+                <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+            </div>
+            <!-- 서브 메뉴 -->
+            <div class="submenu">
+                <div class="submenu-item active">
+                    <i class="far fa-file-alt"></i> <span class="label-text">분류</span>
+                </div>
+                <div class="submenu-item">
+                    <i class="fas fa-folder-open"></i> <span class="label-text">검토</span>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-layer-group"></i> <span class="label-text">수집패턴 관리</span></div>
+                <i class="fas fa-chevron-left" style="font-size: 10px;"></i>
+            </div>
+            <div class="menu-item">
+                <div class="label"><i class="far fa-file-code"></i> <span class="label-text">릴리즈 관리</span></div>
+            </div>
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-laptop"></i> <span class="label-text">SWDB 릴리즈뷰 관리</span></div>
+            </div>
+            <div class="menu-item">
+                <div class="label"><i class="fas fa-edit"></i> <span class="label-text">피드백 관리</span></div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main>
+            <!-- 페이지 타이틀 -->
+            <div class="content-header">
+                <div class="title-area">
+                    <h2>SWDB 작업실</h2>
+                    <p>AI 분류작업이 완료된 SW 항목을 확인하고 작업하여 MDB 등록할 수 있는 작업공간입니다. <a href="#">SW 항목을 더블클릭하여 AI 분류 결과를 조회하고 선택할 수 있습니다.</a></p>
+                </div>
+                <div class="action-area">
+                    <div class="worker-info">작업중인 사용자: <span>윤상근</span></div>
+                    <button class="btn btn-primary"><i class="far fa-save"></i> 작업저장</button>
+                    <button class="btn">동작 <i class="fas fa-caret-down"></i></button>
+                </div>
+            </div>
+
+            <!-- 그리드 컨트롤 (선택 항목 표시) -->
+            <div class="grid-controls">
+                <span>0개 선택됨</span>
+            </div>
+
+            <!-- 데이터 테이블 -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox"></th>
+                            <th style="width: 120px;">고객사</th>
+                            <th style="width: 120px;">주요저작권사</th>
+                            <th style="width: 80px;">패턴</th>
+                            <th style="width: 80px;">OS</th>
+                            <th style="width: 100px;">접수일 <i class="fas fa-filter" style="font-size: 10px; color: #94a3b8;"></i></th>
+                            <th style="width: 150px;">제어판명</th>
+                            <th style="width: 150px;">저작권사명</th>
+                            <th style="width: 150px;">AI 제품명</th>
+                            <th style="width: 150px;">AI 저작권사명</th>
+                            <th style="width: 100px;">AI분류</th>
+                            <th style="width: 80px;">정확도</th>
+                            <th style="width: 80px;">패턴검수</th>
+                            <th style="width: 200px;">사유</th>
+                            <th style="width: 150px;">파일명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 데이터 로우는 비어있는 상태 -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modal 1: Single Product Registration -->
+    <div id="modal-single" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">제품 등록</div>
+                <div class="modal-close" onclick="closeModal('modal-single')"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="modal-body">
+                <div class="form-section-title">제품정보</div>
+                
+                <div class="form-grid">
+                    <label class="form-label required">제품명</label>
+                    <input type="text" class="form-input" data-key="productName" placeholder="제품명을 입력하세요.">
+                </div>
+                <div class="form-grid">
+                    <label class="form-label required">저작권사명</label>
+                    <input type="text" class="form-input" data-key="copyrightName" placeholder="저작권사명을 입력하세요.">
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">라이선스 유형</label>
+                    <select class="form-select" data-key="licenseType">
+                        <option value="미지정">미지정</option>
+                        <option value="상용">상용</option>
+                        <option value="프리">프리</option>
+                        <option value="쉐어">쉐어</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">SW 제품유형</label>
+                    <select class="form-select" data-key="swType">
+                        <option value="미지정">미지정</option>
+                        <option value="개발소프트웨어">개발소프트웨어</option>
+                    </select>
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">iScan 제품 유형</label>
+                    <select class="form-select" data-key="iScanSwType">
+                        <option value="미지정">미지정</option>
+                    </select>
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">SW 그룹 선택</label>
+                    <select class="form-select" data-key="swGroup">
+                        <option value="미지정">미지정</option>
+                        <option value="Dev Tools">Dev Tools</option>
+                    </select>
+                </div>
+                
+                <div class="divider"></div>
+
+                <div class="form-grid">
+                    <label class="form-label">제품요약</label>
+                    <textarea class="form-input" data-key="summary" style="height: 60px;"></textarea>
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">라이선스 메모</label>
+                    <textarea class="form-input" data-key="licenseMemo" style="height: 60px;"></textarea>
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">제품 URL</label>
+                    <input type="text" class="form-input" data-key="productUrl" placeholder="제품 URL을 입력해주세요.">
+                </div>
+                <div class="form-grid">
+                    <label class="form-label">라이선스 근거 URL</label>
+                    <input type="text" class="form-input" data-key="licenseEvidenceUrl" placeholder="라이선스 근거 URL을 입력하세요.">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('modal-single')">취소</button>
+                <button class="btn btn-primary" onclick="closeModal('modal-single');">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Multi/Compare Registration -->
+    <div id="modal-multi" class="modal-overlay">
+        <div class="modal-window xlarge">
+            <div class="modal-header">
+                <div class="modal-title">MDB 등록 비교 (다중 선택)</div>
+                <div class="modal-close" onclick="closeModal('modal-multi')"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="modal-body" style="overflow: hidden; padding: 0;"> 
+                <div class="three-col-layout">
+                    <!-- Column 1: Pattern List -->
+                    <div class="col-list" id="multi-select-list">
+                        <div class="list-header">패턴 비교 관리 (총 <span id="patternCount">0</span>건)</div>
+                        <div class="reference-section" id="referenceSection">
+                            <div class="reference-title">기준 패턴 (Reference)</div>
+                            <div id="masterCardContainer">
+                                <!-- Master card will be injected here -->
+                            </div>
+                        </div>
+                        <div class="list-section" id="sidebarBody">
+                            <div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">비교 대상 목록 (Targets)</div>
+                            <!-- Target items will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Column 2 & 3: Comparison Forms -->
+                    <div class="col-comparison">
+                        <!-- Form Left -->
+                        <div class="form-panel" data-panel="left">
+                            <div class="panel-header">
+                                <span>신규제품 등록 <span class="colBadge"></span></span>
+                            </div>
+                            
+                            <div class="tabs">
+                                <div class="tab active" data-tab="info">제품정보</div>
+                                <div class="tab" data-tab="group">그룹핑</div>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="tabPane" data-pane="info">
+                                    <div class="form-grid">
+                                        <label class="form-label required">제품명</label>
+                                        <input type="text" class="form-input" data-key="productName" placeholder="제품명을 입력하세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label required">저작권사명</label>
+                                        <input type="text" class="form-input" data-key="copyrightName" placeholder="저작권사명을 입력하세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 유형</label>
+                                        <select class="form-select" data-key="licenseType">
+                                            <option value="미지정">미지정</option>
+                                            <option value="상용">상용</option>
+                                            <option value="프리">프리</option>
+                                            <option value="쉐어">쉐어</option>
+                                            <option value="기타">기타</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">SW 제품유형</label>
+                                        <select class="form-select" data-key="swType">
+                                            <option value="미지정">미지정</option>
+                                            <option value="개발소프트웨어">개발소프트웨어</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">iScan 제품 유형</label>
+                                        <select class="form-select" data-key="iScanSwType">
+                                            <option value="미지정">미지정</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">SW 그룹 선택</label>
+                                        <select class="form-select" data-key="swGroup">
+                                            <option value="미지정">미지정</option>
+                                            <option value="Dev Tools">Dev Tools</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="divider"></div>
+
+                                    <div class="form-grid">
+                                        <label class="form-label">제품요약</label>
+                                        <textarea class="form-input" data-key="summary" style="height: 60px;"></textarea>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 메모</label>
+                                        <textarea class="form-input" data-key="licenseMemo" style="height: 60px;"></textarea>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">제품 URL</label>
+                                        <input type="text" class="form-input" data-key="productUrl" placeholder="제품 URL을 입력해주세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 근거 URL</label>
+                                        <input type="text" class="form-input" data-key="licenseEvidenceUrl" placeholder="라이선스 근거 URL을 입력하세요.">
+                                    </div>
+                                </div>
+
+                                <div class="tabPane" data-pane="group" style="display:none;">
+                                    <div class="form-grid">
+                                        <label class="form-label">그룹명</label>
+                                        <input type="text" class="form-input" data-key="groupName" placeholder="그룹명을 입력하세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">그룹 설명</label>
+                                        <textarea class="form-input" data-key="groupDesc" style="height: 60px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Right -->
+                        <div class="form-panel" data-panel="right">
+                            <div class="panel-header">
+                                <span>신규제품 등록 <span class="colBadge"></span></span>
+                            </div>
+
+                            <div class="tabs">
+                                <div class="tab active" data-tab="info">제품정보</div>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="tabPane" data-pane="info">
+                                    <div class="form-grid">
+                                        <label class="form-label required">제품명</label>
+                                        <input type="text" class="form-input" data-key="productName" placeholder="제품명을 입력하세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label required">저작권사명</label>
+                                        <input type="text" class="form-input" data-key="copyrightName" placeholder="저작권사명을 입력하세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 유형</label>
+                                        <select class="form-select" data-key="licenseType">
+                                            <option value="미지정">미지정</option>
+                                            <option value="상용">상용</option>
+                                            <option value="프리">프리</option>
+                                            <option value="쉐어">쉐어</option>
+                                            <option value="기타">기타</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">SW 제품유형</label>
+                                        <select class="form-select" data-key="swType">
+                                            <option value="미지정">미지정</option>
+                                            <option value="개발소프트웨어">개발소프트웨어</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">iScan 제품 유형</label>
+                                        <select class="form-select" data-key="iScanSwType">
+                                            <option value="미지정">미지정</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">SW 그룹 선택</label>
+                                        <select class="form-select" data-key="swGroup">
+                                            <option value="미지정">미지정</option>
+                                            <option value="Dev Tools">Dev Tools</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="divider"></div>
+
+                                    <div class="form-grid">
+                                        <label class="form-label">제품요약</label>
+                                        <textarea class="form-input" data-key="summary" style="height: 60px;"></textarea>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 메모</label>
+                                        <textarea class="form-input" data-key="licenseMemo" style="height: 60px;"></textarea>
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">제품 URL</label>
+                                        <input type="text" class="form-input" data-key="productUrl" placeholder="제품 URL을 입력해주세요.">
+                                    </div>
+                                    <div class="form-grid">
+                                        <label class="form-label">라이선스 근거 URL</label>
+                                        <input type="text" class="form-input" data-key="licenseEvidenceUrl" placeholder="라이선스 근거 URL을 입력하세요.">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('modal-multi')">취소</button>
+                <button class="btn btn-primary" onclick="registerMultiItems();">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JavaScript Files (분리된 스크립트 로드) -->
+    <script src="data-service.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
