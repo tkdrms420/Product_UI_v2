@@ -202,11 +202,11 @@
         }
         .apply-btn i { font-size: 10px; }
 
-        /* 롤백 버튼 스타일 */
+        /* 원복(원래대로) 버튼 스타일 */
         .rollback-btn {
             background: #353f53;
             border: 1px solid #4a5568;
-            color: #ef4444; /* 롤백은 경고 의미로 붉은색 계열 */
+            color: #ef4444; /* 원복은 경고 의미로 붉은색 계열 */
             border-radius: 4px;
             width: 28px;
             height: 28px;
@@ -559,9 +559,10 @@
         }
 
         .modal-window.xlarge {
-            width: 95%;
-            height: 90%;
-            max-width: 1600px;
+            width: 99%;
+            height: 99%;
+            max-width: none;
+            max-height: none;
         }
 
         .modal-header {
@@ -735,11 +736,7 @@
             word-wrap: break-word;
         }
 
-        .modal-window.xlarge {
-            width: 95%;
-            height: 90%;
-            max-width: 1600px;
-        }
+        /* Removed redundant xlarge definition */
 
         .three-col-layout {
             display: flex;
@@ -917,9 +914,9 @@
         }
         .item-card-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center; /* 헤더 텍스트와 버튼 높이 정렬 */
-            gap: 10px;
+            justify-content: flex-start; /* Keep buttons close to text */
+            align-items: center;
+            gap: 15px; /* Fixed closer gap */
         }
         .exclude-btn {
             padding: 4px 8px;
@@ -939,6 +936,15 @@
             background-color: rgba(239, 68, 68, 0.1);
             color: #f87171;
             border-color: #f87171;
+        }
+        .exclude-btn.confirming {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        .exclude-btn.confirming:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-color: #34d399;
         }
         .item-card-actions {
             display: flex;
@@ -1077,7 +1083,7 @@
     <div id="modal-single" class="modal-overlay">
         <div class="modal-window">
             <div class="modal-header">
-                <div class="modal-title">제품 등록</div>
+                <div class="modal-title">신규 제품 등록</div>
                 <div class="modal-close" onclick="closeModal('modal-single')"><i class="fas fa-times"></i></div>
             </div>
             <div class="modal-body">
@@ -1152,22 +1158,22 @@
     <div id="modal-multi" class="modal-overlay">
         <div class="modal-window xlarge">
             <div class="modal-header">
-                <div class="modal-title">MDB 등록 (다중 선택)</div>
+                <div class="modal-title">신규 제품 등록</div>
                 <div class="modal-close" onclick="closeModal('modal-multi')"><i class="fas fa-times"></i></div>
             </div>
             <div class="modal-body" style="overflow: hidden; padding: 0;"> 
                 <div class="three-col-layout">
                     <!-- Column 1: Pattern List -->
                     <div class="col-list" id="multi-select-list">
-                        <div class="list-header">일괄 등록 대상 (총 <span id="patternCount">0</span>건)</div>
+                        <div class="list-header">등록 대상 (총 <span id="patternCount">0</span>건)</div>
                         <div class="reference-section" id="referenceSection">
-                            <div class="reference-title">대표 제품 정보</div>
+                            <div class="reference-title">기준 정보</div>
                             <div id="masterCardContainer">
                                 <!-- Master card will be injected here -->
                             </div>
                         </div>
                         <div class="list-section" id="sidebarBody">
-                            <div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">포함 대상 목록</div>
+                            <div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">추가 정보</div>
                             <!-- Target items will be injected here -->
                         </div>
                     </div>
@@ -1177,7 +1183,7 @@
                         <!-- Form Left -->
                         <div class="form-panel" data-panel="left">
                             <div class="panel-header">
-                                <span>대표 제품 정보 <span class="colBadge"></span></span>
+                                <span>기준 정보 <span class="colBadge"></span></span>
                             </div>
                             
                             <div class="tabs">
@@ -1187,17 +1193,17 @@
 
                             <div class="panel-body">
                                 <div class="tabPane" data-pane="info">
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="productName" onclick="rollbackField('productName')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label required">제품명</label>
                                         <input type="text" class="form-input" data-key="productName" placeholder="제품명을 입력하세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="copyrightName" onclick="rollbackField('copyrightName')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label required">저작권사명</label>
                                         <input type="text" class="form-input" data-key="copyrightName" placeholder="저작권사명을 입력하세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="licenseType" onclick="rollbackField('licenseType')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">라이선스 유형</label>
                                         <select class="form-select" data-key="licenseType">
@@ -1208,7 +1214,7 @@
                                             <option value="기타">기타</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="swType" onclick="rollbackField('swType')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">SW 제품유형</label>
                                         <select class="form-select" data-key="swType">
@@ -1216,14 +1222,14 @@
                                             <option value="개발소프트웨어">개발소프트웨어</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="iScanSwType" onclick="rollbackField('iScanSwType')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">iScan 제품 유형</label>
                                         <select class="form-select" data-key="iScanSwType">
                                             <option value="미지정">미지정</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="swGroup" onclick="rollbackField('swGroup')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">SW 그룹 선택</label>
                                         <select class="form-select" data-key="swGroup">
@@ -1234,22 +1240,22 @@
                                     
                                     <div class="divider"></div>
 
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="summary" onclick="rollbackField('summary')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">제품요약</label>
                                         <textarea class="form-input" data-key="summary" style="height: 60px;"></textarea>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="licenseMemo" onclick="rollbackField('licenseMemo')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">라이선스 메모</label>
-                                        <textarea class="form-input" data-key="licenseMemo" style="height: 60px;"></textarea>
+                                        <textarea class="form-input" data-key="licenseMemo" style="height: 90px;"></textarea>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="productUrl" onclick="rollbackField('productUrl')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">제품 URL</label>
                                         <input type="text" class="form-input" data-key="productUrl" placeholder="제품 URL을 입력해주세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="rollback-btn" data-rollback="licenseEvidenceUrl" onclick="rollbackField('licenseEvidenceUrl')" title="원본으로 되돌리기"><i class="fas fa-undo"></i></button>
                                         <label class="form-label">라이선스 근거 URL</label>
                                         <input type="text" class="form-input" data-key="licenseEvidenceUrl" placeholder="라이선스 근거 URL을 입력하세요.">
@@ -1272,7 +1278,7 @@
                         <!-- Form Right -->
                         <div class="form-panel" data-panel="right">
                             <div class="panel-header">
-                                <span>대표 제품 정보 <span class="colBadge"></span></span>
+                                <span>기준 정보 <span class="colBadge"></span></span>
                             </div>
 
                             <div class="tabs">
@@ -1281,17 +1287,17 @@
 
                             <div class="panel-body">
                                 <div class="tabPane" data-pane="info">
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('productName')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label required">제품명</label>
                                         <input type="text" class="form-input" data-key="productName" placeholder="제품명을 입력하세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('copyrightName')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label required">저작권사명</label>
                                         <input type="text" class="form-input" data-key="copyrightName" placeholder="저작권사명을 입력하세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('licenseType')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">라이선스 유형</label>
                                         <select class="form-select" data-key="licenseType">
@@ -1302,7 +1308,7 @@
                                             <option value="기타">기타</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('swType')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">SW 제품유형</label>
                                         <select class="form-select" data-key="swType">
@@ -1310,14 +1316,14 @@
                                             <option value="개발소프트웨어">개발소프트웨어</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('iScanSwType')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">iScan 제품 유형</label>
                                         <select class="form-select" data-key="iScanSwType">
                                             <option value="미지정">미지정</option>
                                         </select>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('swGroup')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">SW 그룹 선택</label>
                                         <select class="form-select" data-key="swGroup">
@@ -1328,22 +1334,22 @@
 
                                     <div class="divider"></div>
 
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('summary')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">제품요약</label>
                                         <textarea class="form-input" data-key="summary" style="height: 60px;"></textarea>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('licenseMemo')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">라이선스 메모</label>
-                                        <textarea class="form-input" data-key="licenseMemo" style="height: 60px;"></textarea>
+                                        <textarea class="form-input" data-key="licenseMemo" style="height: 90px;"></textarea>
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('productUrl')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">제품 URL</label>
                                         <input type="text" class="form-input" data-key="productUrl" placeholder="제품 URL을 입력해주세요.">
                                     </div>
-                                    <div class="form-grid" style="grid-template-columns: 40px 120px 1fr;">
+                                    <div class="form-grid" style="grid-template-columns: 30px 100px 1fr; gap: 8px;">
                                         <button class="apply-btn" onclick="applyToLeft('licenseEvidenceUrl')" title="기준으로 적용"><i class="fas fa-chevron-left"></i></button>
                                         <label class="form-label">라이선스 근거 URL</label>
                                         <input type="text" class="form-input" data-key="licenseEvidenceUrl" placeholder="라이선스 근거 URL을 입력하세요.">
