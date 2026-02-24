@@ -17,7 +17,7 @@ let patterns = [];
 let selectedPatterns = [];
 // 전역 변수: 검수 완료된 패턴 ID 추적
 let reviewedPatternIds = new Set();
-// 전역 변수: 기준 패턴의 초기 값 저장 (수정 이력 추적용)
+// 전역 변수: 기준 정보의 초기 값 저장 (수정 이력 추적용)
 let originalMasterValues = {};
 
 // 모든 DOM 조작이 완료된 후 시작
@@ -272,11 +272,13 @@ window.closeModal = function (id) {
   document.getElementById(id).style.display = "none";
 };
 
+/* 
 window.onclick = function (event) {
   if (event.target.classList.contains("modal-overlay")) {
     event.target.style.display = "none";
   }
 };
+*/
 
 // ============================================
 // Ctrl+1 Shortcut (Modal Open)
@@ -313,8 +315,7 @@ function handleCtrl1() {
         // 초기화: 첫 번째 항목을 기준으로, 두 번째 항목을 비교 대상으로 설정
         checkedPatternId = selectedPatterns[0].id;
         fillPanel("left", selectedPatterns[0]);
-        // 기준 패턴은 자동으로 검수 완료 처리
-        reviewedPatternIds.add(checkedPatternId);
+        reviewedPatternIds.add(checkedPatternId); // 기준 패턴은 자동으로 검수 완료 처리
         
         if (selectedPatterns.length > 1) {
             selectPatternForRight(selectedPatterns[1].id);
@@ -527,7 +528,7 @@ function setupRestoreColumns() {
 // ============================================
 // Mismatch UI Logic (패턴 비교 기능)
 // ============================================
-// 기준 필드 목록 (제품 기본 정보)
+// 기준 필드 목록 (제품 기준 정보)
 const productBaseFields = ["productName", "copyrightName", "licenseType", "swType", "iScanSwType", "swGroup"];
 // 확장 필드 목록 (메모, 요약, URL 등)
 const productExtraFields = ["summary", "licenseMemo", "productUrl", "licenseEvidenceUrl"];
@@ -544,7 +545,7 @@ const fieldLabelMap = {
 };
 
 let checkedPatternId = 1;
-let selectedPatternId = 2;
+let selectedPatternId = 2; // 추가 정보 패널용 ID
 
 function initMismatchUI() {
   // Initialize Tabs
@@ -620,7 +621,7 @@ function renderPatternList() {
   
   masterContainer.innerHTML = "";
   // Clear list container, but keep the header if any (though we redefined sidebarBody to be the list section)
-  listContainer.innerHTML = '<div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">포함 대상 목록</div>';
+  listContainer.innerHTML = '<div class="reference-title" style="color: #94a3b8; padding: 5px 5px 10px 5px;">추가 정보</div>';
   
   countEl.innerText = selectedPatterns.length;
 
@@ -685,7 +686,23 @@ function renderPatternList() {
       const excludeBtn = div.querySelector(".exclude-btn");
       excludeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        excludePattern(p.id);
+
+        if (excludeBtn.classList.contains("confirming")) {
+          // 2단계: 실제 제외 로직 실행
+          excludePattern(p.id);
+        } else {
+          // 1단계: 확인 상태로 전환
+          excludeBtn.classList.add("confirming");
+          excludeBtn.innerHTML = '<i class="fas fa-check"></i> 확인';
+
+          // 3초 후 초기화 (타임아웃)
+          setTimeout(() => {
+            if (excludeBtn && excludeBtn.classList.contains("confirming")) {
+              excludeBtn.classList.remove("confirming");
+              excludeBtn.innerHTML = '<i class="fas fa-minus-circle"></i> 대상 제외';
+            }
+          }, 3000);
+        }
       });
       listContainer.appendChild(div);
     }
@@ -693,7 +710,7 @@ function renderPatternList() {
 }
 
 /**
- * 포함 대상 목록에서 특정 항목을 제외하고 메인 테이블 체크박스 동기화
+ * 후보 목록에서 특정 항목을 제외하고 메인 테이블 체크박스 동기화
  */
 function excludePattern(id) {
   // 1. 선택 목록에서 제거
@@ -730,7 +747,7 @@ function excludePattern(id) {
           f.classList.remove('diff-highlight');
         });
         const headerSpan = rightPanel.querySelector(".panel-header > span:first-child");
-        if (headerSpan) headerSpan.innerHTML = `<span>포함 대상 없음</span>`;
+        if (headerSpan) headerSpan.innerHTML = `<span>후보 없음</span>`;
       }
     }
   }
@@ -766,7 +783,7 @@ function swapMasterPattern(newMasterId) {
 
   renderPatternList();
   updateDiff();
-  showToast("대표 제품이 교체되었습니다.");
+  showToast("기준 정보가 교체되었습니다.");
 }
 
 function registerMultiItems() {
@@ -824,10 +841,10 @@ function fillPanel(panelName, p) {
 
     if (panelName === "left") {
       const checkedPattern = selectedPatterns.find((x) => x.id === checkedPatternId);
-      headerSpan.innerHTML = `<span>${checkedPattern?.controlPanelName || "대표 제품 정보"}</span> <span class="role-label">대표 제품</span>`;
+      headerSpan.innerHTML = `<span>${checkedPattern?.controlPanelName || "기준 정보"}</span> <span class="role-label">기준 정보</span>`;
     } else if (panelName === "right") {
       const selectedPattern = selectedPatterns.find((x) => x.id === selectedPatternId);
-      headerSpan.innerHTML = `<span>${selectedPattern?.controlPanelName || "비교대상"}</span> <span class="role-label">포함 대상</span>`;
+      headerSpan.innerHTML = `<span>${selectedPattern?.controlPanelName || "추가 정보"}</span> <span class="role-label">추가 정보</span>`;
     }
   }
 
